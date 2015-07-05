@@ -15,16 +15,27 @@ module DZT
       @s3_key = options[:s3_key] || DEFAULT_KEY
       @s3_id = options[:aws_id]
       @s3_secret = options[:aws_secret]
+      @region = options[:region]
     end
 
     def s3
       @s3 ||= begin
         require_fog!
-        Fog::Storage.new(
-          provider: 'AWS',
-          aws_access_key_id: @s3_id,
-          aws_secret_access_key: @s3_secret
-        )
+        if @region
+          Fog::Storage.new(
+            provider: 'AWS',
+            aws_access_key_id: @s3_id,
+            aws_secret_access_key: @s3_secret,
+            region: @region
+          )
+        else
+          Fog::Storage.new(
+            provider: 'AWS',
+            aws_access_key_id: @s3_id,
+            aws_secret_access_key: @s3_secret
+
+          )
+        end
       end
     end
 

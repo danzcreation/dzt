@@ -21,6 +21,7 @@ command :slice do |c|
   c.flag [:s3_key, 's3-key'], desc: 'S3 Key', default_value: DZT::S3Storage::DEFAULT_KEY
   c.flag [:aws_id, 'aws-id'], desc: 'AWS Id'
   c.flag [:aws_secret, 'aws-secret'], desc: 'AWS Secret'
+  c.flag [:region, 'region'], desc: "S3 Region"
   c.action do |_global_options, options, args|
     fail 'You must specify an image file to slice.' if args.length < 1
     if options[:output]
@@ -33,7 +34,8 @@ command :slice do |c|
         s3_bucket: options[:bucket],
         s3_key: options[:s3_key],
         aws_id: options[:aws_id],
-        aws_secret: options[:aws_secret]
+        aws_secret: options[:aws_secret],
+        region: options[:region]
       )
     else
       fail 'You must specify either --output or --aws_id, --aws_secret and --bucket.'
