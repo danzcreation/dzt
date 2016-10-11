@@ -10,38 +10,38 @@ default_command :slice
 
 desc 'Slice an image'
 command :slice do |c|
-  c.flag [:o, :output, 'output'], desc: 'Output folder'
+  c.flag [:o, :output, 'output'], desc: 'Tile output path', default_value: DZT::Tiler::DEFAULT_OUTPUT_PATH
+  c.flag [:id, :identifier, 'identifier'], desc: 'Output identifier'
   c.flag [:ts, :tilesize, 'tile-size'], desc: 'Tile size', default_value: DZT::Tiler::DEFAULT_TILE_SIZE, type: Integer
   c.flag [:to, :tileoverlap, 'tile-overlap'], desc: 'Tile overlap', default_value: DZT::Tiler::DEFAULT_TILE_OVERLAP, type: Integer
   c.flag [:q, :quality], desc: 'Output quality', default_value: DZT::Tiler::DEFAULT_QUALITY, type: Integer
   c.flag [:f, :format], desc: 'Tile format', default_value: DZT::Tiler::DEFAULT_TILE_FORMAT
   c.flag [:overwrite], desc: 'Overwrite output files', default_value: DZT::Tiler::DEFAULT_OVERWRITE_FLAG
-  c.flag [:acl], desc: 'S3 Acl', default_value: DZT::S3Storage::DEFAULT_ACL
-  c.flag [:bucket], desc: 'S3 Bucket'
-  c.flag [:s3_key, 's3-key'], desc: 'S3 Key', default_value: DZT::S3Storage::DEFAULT_KEY
   c.flag [:aws_id, 'aws-id'], desc: 'AWS Id'
   c.flag [:aws_secret, 'aws-secret'], desc: 'AWS Secret'
+  c.flag [:acl], desc: 'S3 Acl', default_value: DZT::S3Storage::DEFAULT_ACL
+  c.flag [:bucket], desc: 'S3 Bucket'
   c.flag [:region, 'region'], desc: "S3 Region"
   c.action do |_global_options, options, args|
     fail 'You must specify an image file to slice.' if args.length < 1
-    if options[:output]
-      storage = DZT::FileStorage.new(
-        destination: options[:output]
-      )
-    elsif options[:aws_id] && options[:aws_secret] && options[:bucket]
+    fail 'You must specify --identifier' unless options[:identifier]
+    if options[:aws_id] && options[:aws_secret] && options[:bucket]
       storage = DZT::S3Storage.new(
         s3_acl: options[:acl],
         s3_bucket: options[:bucket],
-        s3_key: options[:s3_key],
+        s3_key: options[:output],
         aws_id: options[:aws_id],
         aws_secret: options[:aws_secret],
         region: options[:region]
       )
     else
-      fail 'You must specify either --output or --aws_id, --aws_secret and --bucket.'
+      storage = DZT::FileStorage.new(
+        destination: options[:output]
+      )
     end
     tiler = DZT::Tiler.new(
       source: args[0],
+      identifier: options[:identifier],
       size: options[:tilesize],
       overlap: options[:tileoverlap],
       format: options[:format],

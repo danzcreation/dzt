@@ -4,6 +4,7 @@ require_relative 's3_storage'
 module DZT
   class Tiler
     # Defaults
+    DEFAULT_OUTPUT_PATH = 'tiles'
     DEFAULT_TILE_SIZE = 512
     DEFAULT_TILE_OVERLAP = 0
     DEFAULT_QUALITY = 75
@@ -13,6 +14,7 @@ module DZT
     # Generates the DZI-formatted tiles and sets necessary metadata on this object.
     #
     # @param source Magick::Image, or filename of image to be used for tiling
+    # @param identifier Identifier for output tiles
     # @param quality Image compression quality (default: 75)
     # @param format Format for output tiles (default: "jpg")
     # @param size Size, in pixels, for tile squares (default: 512)
@@ -23,6 +25,9 @@ module DZT
     def initialize(options)
       @tile_source = options[:source]
       fail 'Missing options[:source].' unless @tile_source
+
+      @tile_identifier = options[:identifier]
+      fail 'Missing options[:identifier].' unless @tile_identifier
 
       @tile_source = Magick::Image.read(@tile_source)[0] if @tile_source.is_a?(String)
       @tile_size = options[:size] || DEFAULT_TILE_SIZE
@@ -53,7 +58,7 @@ module DZT
         width = image.columns
         height = image.rows
 
-        current_level_storage_dir = @storage.storage_location(level)
+        current_level_storage_dir = @storage.storage_location(@tile_identifier, level)
         @storage.mkdir(current_level_storage_dir)
         yield current_level_storage_dir if block_given?
 

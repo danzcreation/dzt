@@ -4,15 +4,15 @@ module DZT
     # @param destination: Full directory in which to output tiles, defaults to 'tiles' in the current dir.
     #
     def initialize(options = {})
-      @store_path = options[:destination] || File.join(Dir.pwd, 'tiles')
+      @store_path = File.join(Dir.pwd, options[:destination])
     end
 
     def exists?
       File.directory?(@store_path) && !Dir['@{@store_path}/*'].empty?
     end
 
-    def storage_location(level)
-      File.join(@store_path, level.to_s)
+    def storage_location(identifier, level)
+      File.join(@store_path, identifier, level.to_s)
     end
 
     def mkdir(path)

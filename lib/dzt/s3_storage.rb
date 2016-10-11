@@ -1,7 +1,6 @@
 module DZT
   class S3Storage
     DEFAULT_ACL = 'public-read'
-    DEFAULT_KEY = ''
     #
     # @param s3_acl: ACL to use for storing, defaults to 'public-read'.
     # @param s3_bucket: Bucket to store tiles.
@@ -12,7 +11,7 @@ module DZT
     def initialize(options = {})
       @s3_acl = options[:s3_acl] || DEFAULT_ACL
       @s3_bucket = options[:s3_bucket]
-      @s3_key = options[:s3_key] || DEFAULT_KEY
+      @s3_key = options[:s3_key]
       @s3_id = options[:aws_id]
       @s3_secret = options[:aws_secret]
       @region = options[:region]
@@ -44,8 +43,8 @@ module DZT
       false
     end
 
-    def storage_location(level)
-      "#{@s3_key}/#{level}"
+    def storage_location(identifier, level)
+      "#{@s3_key}/#{identifier}/#{level}"
     end
 
     # no-op
