@@ -17,4 +17,5 @@ Gem::Specification.new do |s|
   s.summary = 'Tile images for deep-zoom.'
   s.add_dependency 'gli'
   s.add_dependency 'rmagick'
+  s.add_dependency 'json'
 end

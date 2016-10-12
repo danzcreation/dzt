@@ -43,8 +43,8 @@ module DZT
       false
     end
 
-    def storage_location(identifier, level)
-      "#{@s3_key}/#{identifier}/#{level}"
+    def storage_location(identifier = nil, level = nil)
+      level.nil? ? @s3_key : "#{@s3_key}/#{identifier}/#{level}"
     end
 
     # no-op
@@ -57,6 +57,14 @@ module DZT
                     'Content-Type' => file.mime_type,
                     'x-amz-acl' => @s3_acl
                    )
+    end
+
+    def write_dzi(content, dest)
+      dzi_file = Tempfile.new('dzi_file')
+      dzi_file.write(content)
+
+      s3.put_object(@s3_bucket, dest, dzi_file, 'x-amz-acl' => @s3_acl)
+      dzi_file.unlink
     end
 
     private

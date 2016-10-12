@@ -1,3 +1,5 @@
+require 'json'
+
 # Deep Zoom module for generating Deep Zoom (DZI) tiles from a source image
 require_relative 'file_storage'
 require_relative 's3_storage'
@@ -58,7 +60,7 @@ module DZT
         width = image.columns
         height = image.rows
 
-        current_level_storage_dir = @storage.storage_location(@tile_identifier, level)
+        current_level_storage_dir = @storage.storage_location("#{@tile_identifier}_files", level)
         @storage.mkdir(current_level_storage_dir)
         yield current_level_storage_dir if block_given?
 
@@ -85,6 +87,7 @@ module DZT
         image.resize!(0.5)
       end
 
+      write_dzi_file
       image.destroy!
     end
 
@@ -130,6 +133,25 @@ module DZT
       # To reset the offset data, adding true as the last argument to crop.
       cropped = img.crop(x, y, width, height, true)
       @storage.write(cropped, dest, quality: quality)
+    end
+
+    # Generates the DZI descriptor file in JSON.
+    def write_dzi_file
+      properties = {
+        'Image' => {
+          'xmlns' => "http://schemas.microsoft.com/deepzoom/2008",
+          'Format' => @tile_format,
+          'Overlap' => @tile_overlap.to_s,
+          'TileSize' => @tile_size.to_s,
+          'Size' => {
+            'Height' => @tile_source.rows.to_s,
+            'Width' => @tile_source.columns.to_s
+          }
+        }
+      }
+      
+      dzi_path = File.join(@storage.storage_location, @tile_identifier + ".dzi")
+      @storage.write_dzi(JSON.pretty_generate(properties), dzi_path)
     end
   end
 end
